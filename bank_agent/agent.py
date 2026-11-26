@@ -2,9 +2,9 @@
 
 import os
 
+from agents import Agent, OpenAIChatCompletionsModel, set_tracing_disabled
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
-from agents import Agent, OpenAIChatCompletionsModel, set_tracing_disabled
 
 from bank_agent.data import BANK_NAME
 from bank_agent.tools import ALL_TOOLS
@@ -33,13 +33,17 @@ def build_agent() -> Agent:
     load_dotenv()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENROUTER_API_KEY is not set. Copy .env.example to .env and add your key.")
+        raise RuntimeError(
+            "OPENROUTER_API_KEY is not set. Copy .env.example to .env and add your key."
+        )
 
     # Tracing uploads to OpenAI's platform by default; we have no OpenAI key, so turn it off.
     set_tracing_disabled(True)
 
     client = AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)
-    model = OpenAIChatCompletionsModel(model=os.getenv("AGENT_MODEL", DEFAULT_MODEL), openai_client=client)
+    model = OpenAIChatCompletionsModel(
+        model=os.getenv("AGENT_MODEL", DEFAULT_MODEL), openai_client=client
+    )
 
     return Agent(
         name="Northwind Support Assistant",

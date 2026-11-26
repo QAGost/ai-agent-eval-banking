@@ -76,10 +76,17 @@ pytest -v
 
 These tests never call an LLM and need no API key.
 
+## Lint and format
+
+```bash
+ruff check .
+ruff format --check .
+```
+
 ## Run the agent
 
 ```bash
-python run_agent.py "I'm customer CUST-1002, PIN 7390. Is the $1,240 charge on my account suspicious?"
+python run_agent.py 'I am customer CUST-1002, PIN 7390. Is the $1,240 charge on my account suspicious?'
 ```
 
 The output shows the agent's final answer, followed by the list of tool calls it made (tool

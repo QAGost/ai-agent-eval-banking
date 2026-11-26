@@ -32,18 +32,30 @@ def verify_customer(customer_id: str, last4_ssn_or_pin: str) -> str:
     """Check the customer's identity with their customer ID and the last 4 SSN digits or PIN."""
     customer = data.CUSTOMERS.get(customer_id)
     if customer is None:
-        return json.dumps({"verified": False, "error": "unknown_customer",
-                           "message": f"No customer found with id '{customer_id}'"})
+        return json.dumps(
+            {
+                "verified": False,
+                "error": "unknown_customer",
+                "message": f"No customer found with id '{customer_id}'",
+            }
+        )
     if str(last4_ssn_or_pin).strip() != customer["verification_code"]:
-        return json.dumps({"verified": False, "error": "verification_failed",
-                           "message": "The verification code does not match."})
-    return json.dumps({
-        "verified": True,
-        "customer_id": customer_id,
-        "name": customer["name"],
-        "account_ids": customer["account_ids"],
-        "card_ids": customer["card_ids"],
-    })
+        return json.dumps(
+            {
+                "verified": False,
+                "error": "verification_failed",
+                "message": "The verification code does not match.",
+            }
+        )
+    return json.dumps(
+        {
+            "verified": True,
+            "customer_id": customer_id,
+            "name": customer["name"],
+            "account_ids": customer["account_ids"],
+            "card_ids": customer["card_ids"],
+        }
+    )
 
 
 def get_account_balance(account_id: str) -> str:
@@ -51,13 +63,15 @@ def get_account_balance(account_id: str) -> str:
     account = data.ACCOUNTS.get(account_id)
     if account is None:
         return _error("unknown_account", f"No account found with id '{account_id}'")
-    return json.dumps({
-        "account_id": account_id,
-        "account_number": _mask(account["number"]),
-        "type": account["type"],
-        "currency": account["currency"],
-        "balance": account["balance"],
-    })
+    return json.dumps(
+        {
+            "account_id": account_id,
+            "account_number": _mask(account["number"]),
+            "type": account["type"],
+            "currency": account["currency"],
+            "balance": account["balance"],
+        }
+    )
 
 
 def get_recent_transactions(account_id: str, limit: int = 5) -> str:
@@ -81,12 +95,14 @@ def get_card_status(card_id: str) -> str:
     card = data.CARDS.get(card_id)
     if card is None:
         return _error("unknown_card", f"No card found with id '{card_id}'")
-    return json.dumps({
-        "card_id": card_id,
-        "card_number": _mask(card["number"]),
-        "status": card["status"],
-        "frozen_reason": card["frozen_reason"],
-    })
+    return json.dumps(
+        {
+            "card_id": card_id,
+            "card_number": _mask(card["number"]),
+            "status": card["status"],
+            "frozen_reason": card["frozen_reason"],
+        }
+    )
 
 
 def freeze_card(card_id: str, reason: str) -> str:
@@ -98,13 +114,15 @@ def freeze_card(card_id: str, reason: str) -> str:
     if not already_frozen:
         card["status"] = "frozen"
         card["frozen_reason"] = reason
-    return json.dumps({
-        "card_id": card_id,
-        "card_number": _mask(card["number"]),
-        "status": "frozen",
-        "reason": card["frozen_reason"],
-        "already_frozen": already_frozen,
-    })
+    return json.dumps(
+        {
+            "card_id": card_id,
+            "card_number": _mask(card["number"]),
+            "status": "frozen",
+            "reason": card["frozen_reason"],
+            "already_frozen": already_frozen,
+        }
+    )
 
 
 # --- Agent-facing wrappers --------------------------------------------------

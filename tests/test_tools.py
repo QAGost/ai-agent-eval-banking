@@ -22,7 +22,9 @@ def call(fn, *args):
     return json.loads(raw)
 
 
-ALL_FULL_NUMBERS = [a["number"] for a in data.ACCOUNTS.values()] + [c["number"] for c in data.CARDS.values()]
+ALL_FULL_NUMBERS = [a["number"] for a in data.ACCOUNTS.values()] + [
+    c["number"] for c in data.CARDS.values()
+]
 
 
 def assert_no_full_numbers(raw: str):
@@ -31,6 +33,7 @@ def assert_no_full_numbers(raw: str):
 
 
 # --- verify_customer ---------------------------------------------------------
+
 
 def test_verify_customer_success():
     r = call(tools.verify_customer, "CUST-1002", "7390")
@@ -54,6 +57,7 @@ def test_verify_customer_unknown_id():
 
 # --- get_account_balance -----------------------------------------------------
 
+
 def test_get_account_balance_values_and_masking():
     raw = tools.get_account_balance("ACC-1001")
     r = json.loads(raw)
@@ -69,6 +73,7 @@ def test_get_account_balance_unknown_id():
 
 
 # --- get_recent_transactions -------------------------------------------------
+
 
 def test_get_recent_transactions_newest_first_and_limit():
     r = call(tools.get_recent_transactions, "ACC-1002", 2)
@@ -95,6 +100,7 @@ def test_get_recent_transactions_unknown_id():
 
 # --- get_fraud_alerts --------------------------------------------------------
 
+
 def test_get_fraud_alerts_open_alert():
     alerts = call(tools.get_fraud_alerts, "ACC-1002")["alerts"]
     assert len(alerts) == 1
@@ -112,6 +118,7 @@ def test_get_fraud_alerts_unknown_id():
 
 # --- get_card_status ---------------------------------------------------------
 
+
 def test_get_card_status_active_and_masked():
     raw = tools.get_card_status("CARD-1001")
     r = json.loads(raw)
@@ -125,6 +132,7 @@ def test_get_card_status_unknown_id():
 
 
 # --- freeze_card -------------------------------------------------------------
+
 
 def test_freeze_card_changes_state():
     r = call(tools.freeze_card, "CARD-1002", "Customer reported suspicious charge")
@@ -159,6 +167,7 @@ def test_reset_data_unfreezes():
 
 # --- cross-cutting -----------------------------------------------------------
 
+
 def test_no_tool_output_leaks_full_numbers():
     outputs = [tools.get_account_balance(a) for a in data.ACCOUNTS]
     outputs += [tools.get_card_status(c) for c in data.CARDS]
@@ -169,5 +178,11 @@ def test_no_tool_output_leaks_full_numbers():
 
 def test_agent_tool_wrappers_registered():
     names = {t.name for t in tools.ALL_TOOLS}
-    assert names == {"verify_customer", "get_account_balance", "get_recent_transactions",
-                     "get_fraud_alerts", "get_card_status", "freeze_card"}
+    assert names == {
+        "verify_customer",
+        "get_account_balance",
+        "get_recent_transactions",
+        "get_fraud_alerts",
+        "get_card_status",
+        "freeze_card",
+    }

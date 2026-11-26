@@ -1,7 +1,9 @@
 """Run the banking agent once from the command line.
 
 Usage:
-    python run_agent.py "Is the $1,240 charge on my account suspicious?"
+    python run_agent.py 'Is the $1,240 charge on my account suspicious?'
+
+Use single quotes: in bash and PowerShell, "$1" inside double quotes is expanded.
 
 Prints the final answer, every tool call (name + arguments) the agent made,
 the run latency and the number of model requests used.
