@@ -1,0 +1,25 @@
+# Weekly update PRs for pinned dependencies and SHA-pinned GitHub Actions; each PR must pass CI.
+# Per CLAUDE.md: if a PR bumps requirements.txt without the lock, regenerate
+# requirements-lock.txt (keeping the win32 markers) before merging.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7 # don't adopt brand-new releases immediately
+    open-pull-requests-limit: 5
+    groups:
+      python-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]

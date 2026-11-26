@@ -17,7 +17,7 @@ good its answers are. Checking whether the reply contains a keyword is not enoug
 | 1 | Banking agent, synthetic data, tools, offline tool tests | ✅ Done |
 | 2 | AI-generated test cases (human-reviewed) → golden set; tool-call trajectory evaluation with repeated runs (pass@k / pass^k) | ✅ Done |
 | 3 | LLM-as-judge scoring of answer quality | ⏳ Planned |
-| 4 | Safety & prompt-injection evaluation | ⏳ Planned |
+| 4 | Safety & prompt-injection evaluation; baseline (prompt-only rules) vs code-enforced guardrails, measured | ⏳ Planned |
 | 5 | Robustness (paraphrases, noisy input) & model comparison | ⏳ Planned |
 | 6 | Reporting & CI integration | ⏳ Planned |
 

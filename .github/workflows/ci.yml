@@ -1,0 +1,77 @@
+# Offline checks on every push and pull request. No secrets are used: the tests never
+# call the LLM, so OPENROUTER_API_KEY is deliberately NOT available to CI.
+#
+# Supply-chain hardening:
+# - third-party actions are pinned to full commit SHAs (tags can be moved); the comment
+#   shows the release. Dependabot keeps these pins up to date.
+# - the token is read-only, and checkout does not persist credentials.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Mondays 06:00 UTC: catch newly published vulnerabilities. Note: GitHub pauses
+    # scheduled workflows in public repos after 60 days without repository activity.
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+# Separate groups per event type, so a push to main can never cancel the weekly audit
+# (and vice versa). Only superseded PR runs are cancelled.
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Tests, lint, secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-lock.txt
+
+      - name: Install exact tested environment
+        run: |
+          pip install -r requirements-lock.txt
+          pip check  # fail if the lock is inconsistent (e.g. a missing pinned dependency)
+
+      - name: Secret scan (all tracked files)
+        run: python -m devtools.check_secrets --all
+
+      - name: Lint
+        run: |
+          python -m ruff check .
+          python -m ruff format --check .
+
+      - name: Offline tests
+        run: python -m pytest -q
+
+  audit:
+    name: Dependency vulnerability audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - name: Audit pinned dependencies for known vulnerabilities
+        run: |
+          pip install pip-audit==2.10.1
+          pip-audit -r requirements-lock.txt
