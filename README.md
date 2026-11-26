@@ -83,7 +83,13 @@ python run_agent.py "I'm customer CUST-1002, PIN 7390. Is the $1,240 charge on m
 ```
 
 The output shows the agent's final answer, followed by the list of tool calls it made (tool
-name and arguments). Those tool calls are what later labs evaluate.
+name and arguments), the run latency and the number of model requests used. Those tool calls
+are what later labs evaluate.
+
+> 💸 **API cost:** one question is not one request. Each agent turn is a separate model call,
+> so a single run typically uses 2–8 requests (capped by `max_turns=8`). The OpenRouter free
+> tier allows about 50 requests/day, so run live checks sparingly. The offline tests use no
+> requests at all.
 
 ## License
 

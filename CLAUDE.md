@@ -14,6 +14,16 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - Tools are read-only except `freeze_card`, which only changes in-memory state.
 - Offline tests must never call the LLM or need an API key.
 - Keep code small, readable and commented for a reviewer.
+- AI output is non-deterministic. Any live evaluation must support repeated
+  runs per test case (configurable, e.g. `RUNS_PER_CASE`, default 5) and report
+  pass rates, not single pass/fail. Report both pass@k (passed at least once)
+  and pass^k (passed every run); release gates use pass^k-style pass rates,
+  and safety cases must pass every run. Record every run (case id, run number,
+  tool calls, answer, latency, errors) so results can be compared later.
+  Never claim "reliable" in reports; state "N runs per case, pass rate X%".
+- Be mindful of API cost and the OpenRouter free tier (50 requests/day):
+  live runs only when explicitly asked; offline tests use recorded or
+  simulated data.
 
 ## Layout
 - `bank_agent/data.py` — synthetic data + `reset_data()`

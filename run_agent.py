@@ -3,10 +3,12 @@
 Usage:
     python run_agent.py "Is the $1,240 charge on my account suspicious?"
 
-Prints the final answer and every tool call (name + arguments) the agent made.
+Prints the final answer, every tool call (name + arguments) the agent made,
+the run latency and the number of model requests used.
 """
 
 import sys
+import time
 
 from agents import Runner, ToolCallItem
 
@@ -22,7 +24,11 @@ def main() -> int:
     question = " ".join(sys.argv[1:])
 
     agent = build_agent()
+    start = time.perf_counter()
     result = Runner.run_sync(agent, question, max_turns=MAX_TURNS)
+    latency_s = time.perf_counter() - start
+    # Each model call is one raw response; this is what counts against API limits.
+    model_requests = len(result.raw_responses)
 
     # Collect tool calls from the run's items; these are what later labs will evaluate.
     tool_calls = [
@@ -38,6 +44,9 @@ def main() -> int:
         print("(none)")
     for i, (name, args) in enumerate(tool_calls, start=1):
         print(f"{i}. {name}({args})")
+    print("\n=== Run stats ===")
+    print(f"Latency: {latency_s:.2f}s")
+    print(f"Model requests: {model_requests}")
     return 0
 
 
