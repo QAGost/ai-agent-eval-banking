@@ -12,8 +12,10 @@ def _pct(value: float | None) -> str:
 
 def format_summary(summary: EvalSummary, model: str) -> str:
     k = summary.runs_per_case
+    served = ", ".join(f"{m} x{n}" for m, n in summary.served_models.most_common())
     lines = [
         f"Model: {model}",
+        f"Served by (requests per model): {served or 'not recorded'}",
         (
             f"{k} runs per case requested, {len(summary.cases)} cases, "
             f"{summary.scored_runs} runs scored, pass rate {_pct(summary.run_pass_rate)}"
@@ -52,6 +54,7 @@ def format_summary(summary: EvalSummary, model: str) -> str:
 def summary_to_dict(summary: EvalSummary, model: str) -> dict:
     return {
         "model": model,
+        "served_models": dict(summary.served_models),
         "runs_per_case": summary.runs_per_case,
         "run_pass_rate": summary.run_pass_rate,
         "pass_at_k_rate": summary.pass_at_k_rate,

@@ -6,7 +6,7 @@ Usage:
 Use single quotes: in bash and PowerShell, "$1" inside double quotes is expanded.
 
 Prints the final answer, every tool call (name + arguments) the agent made,
-the run latency and the number of model requests used.
+the run latency, the number of model requests used and which model served them.
 """
 
 import sys
@@ -14,7 +14,7 @@ import time
 
 from agents import Runner, ToolCallItem
 
-from bank_agent.agent import build_agent
+from bank_agent.agent import ServedModelLog, build_agent
 
 MAX_TURNS = 8
 
@@ -25,7 +25,8 @@ def main() -> int:
         return 1
     question = " ".join(sys.argv[1:])
 
-    agent = build_agent()
+    served = ServedModelLog()
+    agent = build_agent(served_models=served)
     start = time.perf_counter()
     result = Runner.run_sync(agent, question, max_turns=MAX_TURNS)
     latency_s = time.perf_counter() - start
@@ -49,6 +50,7 @@ def main() -> int:
     print("\n=== Run stats ===")
     print(f"Latency: {latency_s:.2f}s")
     print(f"Model requests: {model_requests}")
+    print(f"Served by: {', '.join(served.take()) or 'not recorded'}")
     return 0
 
 

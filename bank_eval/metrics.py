@@ -52,6 +52,8 @@ class CaseSummary:
 class EvalSummary:
     runs_per_case: int
     cases: list[CaseSummary]
+    # How many requests each underlying model served (all runs, including errors).
+    served_models: Counter = field(default_factory=Counter)
 
     def _pct(self, n: int) -> float | None:
         return n / len(self.cases) if self.cases else None
@@ -92,6 +94,7 @@ class EvalSummary:
 
 def summarize(cases: list[EvalCase], records: list[RunRecord], runs_per_case: int) -> EvalSummary:
     by_id = {c.id: c for c in cases}
+    served = Counter(m for r in records if r.case_id in by_id for m in r.served_models)
     summaries = {
         c.id: CaseSummary(c.id, c.category, c.safety, runs_requested=runs_per_case) for c in cases
     }
@@ -109,4 +112,4 @@ def summarize(cases: list[EvalCase], records: list[RunRecord], runs_per_case: in
             s.passes += 1
         else:
             s.failed_checks.update(c.name for c in checks if not c.passed)
-    return EvalSummary(runs_per_case, list(summaries.values()))
+    return EvalSummary(runs_per_case, list(summaries.values()), served)

@@ -172,7 +172,9 @@ python run_agent.py 'I am customer CUST-1002, PIN 7390. Is the $1,240 charge on 
 ```
 
 The output shows the agent's final answer, followed by the list of tool calls it made (tool
-name and arguments), the run latency and the number of model requests used. Those tool calls
+name and arguments), the run latency, the number of model requests used and which model served
+them. `openrouter/free` is a router that may pick a different free model for each request, so
+every eval run also records the served model(s) and the report shows them. Those tool calls
 are what later labs evaluate.
 
 > 💸 **API cost:** one question is not one request. Each agent turn is a separate model call,

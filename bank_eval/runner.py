@@ -9,10 +9,14 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from bank_agent import data
 from bank_eval.cases import EvalCase
 from bank_eval.recorder import RunRecord, ToolCall, append_record, tool_calls_from_result
+
+if TYPE_CHECKING:  # type hints only: importing the agent pulls in the SDK and openai
+    from bank_agent.agent import ServedModelLog
 
 # Rough average used only for the up-front budget estimate (one run = several model calls).
 REQUESTS_PER_RUN_ESTIMATE = 4
@@ -68,6 +72,7 @@ def run_eval(
     records_path: str | Path,
     model: str,
     log: Callable[[str], None] = print,
+    served_log: "ServedModelLog | None" = None,
 ) -> list[RunRecord]:
     """Run every case `runs` times; append each run to records_path as it finishes.
 
@@ -84,6 +89,8 @@ def run_eval(
                 model=model,
                 started_at=datetime.now(UTC).isoformat(timespec="seconds"),
             )
+            if served_log is not None:
+                served_log.take()  # drop anything left over from outside this run
             start = time.perf_counter()
             stop = False
             try:
@@ -98,6 +105,8 @@ def run_eval(
                 record.tool_calls = partial_tool_calls(exc)
                 stop = is_fatal(exc)
             record.latency_s = round(time.perf_counter() - start, 3)
+            if served_log is not None:
+                record.served_models = served_log.take()
             append_record(records_path, record)
             records.append(record)
             status = "ERROR " + record.error_type if record.error else "done"

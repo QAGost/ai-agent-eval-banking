@@ -73,10 +73,12 @@ def main() -> int:
         print("Aborted. Nothing was sent.")
         return 1
 
-    from bank_agent.agent import DEFAULT_MODEL, build_agent  # only needed for live runs
+    # Only needed for live runs.
+    from bank_agent.agent import DEFAULT_MODEL, ServedModelLog, build_agent
 
     # Build first: a missing key fails here, before an empty results folder is created.
-    executor = make_live_executor(build_agent(max_retries=0))
+    served_log = ServedModelLog()
+    executor = make_live_executor(build_agent(max_retries=0, served_models=served_log))
     model = os.getenv("AGENT_MODEL", DEFAULT_MODEL)
     out_dir = Path(args.out) / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_dir.mkdir(parents=True)
@@ -85,7 +87,9 @@ def main() -> int:
     meta = {"model": model, "runs_per_case": args.runs, "case_ids": [c.id for c in cases]}
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
-    records = run_eval(cases, args.runs, executor, out_dir / "runs.jsonl", model)
+    records = run_eval(
+        cases, args.runs, executor, out_dir / "runs.jsonl", model, served_log=served_log
+    )
 
     summary = summarize(cases, records, args.runs)
     print()
