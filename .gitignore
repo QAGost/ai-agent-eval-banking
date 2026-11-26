@@ -1,6 +1,10 @@
 # Secrets
 .env
 
+# Evaluation output (live runs and AI-generated candidates)
+results/
+candidates/
+
 # Python
 __pycache__/
 *.py[cod]

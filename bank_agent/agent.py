@@ -28,8 +28,12 @@ Rules you must always follow:
 """
 
 
-def build_agent() -> Agent:
-    """Create the agent. Reads OPENROUTER_API_KEY and AGENT_MODEL from the environment / .env."""
+def make_model(max_retries: int = 2) -> OpenAIChatCompletionsModel:
+    """OpenRouter-backed model. Reads OPENROUTER_API_KEY and AGENT_MODEL from env / .env.
+
+    max_retries: the OpenAI client silently retries 429/5xx errors, and every retry is a
+    request. Evaluations use 0 so the request count stays predictable on the free tier.
+    """
     load_dotenv()
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
@@ -40,14 +44,17 @@ def build_agent() -> Agent:
     # Tracing uploads to OpenAI's platform by default; we have no OpenAI key, so turn it off.
     set_tracing_disabled(True)
 
-    client = AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key)
-    model = OpenAIChatCompletionsModel(
+    client = AsyncOpenAI(base_url=OPENROUTER_BASE_URL, api_key=api_key, max_retries=max_retries)
+    return OpenAIChatCompletionsModel(
         model=os.getenv("AGENT_MODEL", DEFAULT_MODEL), openai_client=client
     )
 
+
+def build_agent(max_retries: int = 2) -> Agent:
+    """Create the banking support agent."""
     return Agent(
         name="Northwind Support Assistant",
         instructions=INSTRUCTIONS,
-        model=model,
+        model=make_model(max_retries),
         tools=ALL_TOOLS,
     )

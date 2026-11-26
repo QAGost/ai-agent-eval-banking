@@ -2,17 +2,7 @@
 
 import json
 
-import pytest
-
 from bank_agent import data, tools
-
-
-@pytest.fixture(autouse=True)
-def clean_state():
-    """Every test starts with the original in-memory data (freeze_card mutates it)."""
-    data.reset_data()
-    yield
-    data.reset_data()
 
 
 def call(fn, *args):

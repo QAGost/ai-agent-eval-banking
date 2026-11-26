@@ -42,5 +42,9 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - `bank_agent/tools.py` — plain tool functions (tested offline) + `@function_tool` wrappers
 - `bank_agent/agent.py` — builds the agent (OpenRouter model, instructions, tools)
 - `run_agent.py` — CLI for one live run
+- `bank_eval/` — evaluation framework: case schema, validator, review gate, generator agent,
+  recorder, runner, trajectory checks, pass@k / pass^k metrics, report
+- `golden/seed_cases.jsonl` (unapproved seeds), `golden/cases.jsonl` (approved golden set)
+- `generate_cases.py` → `review_cases.py` → `run_eval.py` → `score_runs.py` (CLIs)
 - `tests/` — offline pytest tests (`pytest`)
 - `.claude/agents/` — Claude Code subagents: `test-writer`, `reviewer`
