@@ -30,6 +30,7 @@ details**, and the maintainer will arrange a private channel.
 | Pinned dependencies plus a full lock file; vulnerability audit (`pip-audit`) on every push to `main`, every pull request and weekly | `requirements*.txt`, CI |
 | GitHub Actions pinned to full commit SHAs, read-only token, no persisted credentials | `.github/workflows/ci.yml` |
 | Automated update PRs for dependencies and actions | `.github/dependabot.yml` |
+| Commits are signed (SSH signing key) and show as Verified on GitHub | git history |
 | Tests are blocked from opening network connections or DNS lookups (test fixture); CI has no API key, so it cannot call the LLM | `tests/conftest.py`, CI |
 | Agent tools are read-only (except an in-memory card freeze) and return masked numbers | `bank_agent/tools.py` |
 
