@@ -144,6 +144,18 @@ cp .env.example .env        # then edit .env and add your key
 
 `.env` is git-ignored. Never commit your key.
 
+**Enable the pre-commit checks** (once per clone, any OS):
+```bash
+git config core.hooksPath .githooks
+```
+Every commit then runs, offline: a secret scan of the staged files
+([devtools/check_secrets.py](devtools/check_secrets.py)), `ruff check`, `ruff format --check`
+and the offline tests. A failing check blocks the commit.
+
+Dependencies are pinned in `requirements.txt` / `requirements-dev.txt`;
+[requirements-lock.txt](requirements-lock.txt) records the full tested environment
+(`pip install -r requirements-lock.txt` for an exact reproduction).
+
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `OPENROUTER_API_KEY` | OpenRouter API key | (required for live runs) |

@@ -24,6 +24,12 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - Be mindful of API cost and the OpenRouter free tier (50 requests/day):
   live runs only when explicitly asked; offline tests use recorded or
   simulated data.
+- Dependencies are pinned. To upgrade: bump the pin, reinstall, run all checks, then
+  regenerate `requirements-lock.txt` (`pip freeze`) in the same commit, keeping the
+  `; sys_platform == "win32"` markers on Windows-only packages (pywin32, colorama).
+- Never bypass the pre-commit hook (`--no-verify`). If it fails, fix the cause; a secret
+  scan false positive gets `secret-scan: allow` on that line with a reason (it exempts the
+  whole line, so never use it on minified JSON/notebook lines).
 - AI-generated test cases are candidates, never trusted directly: they must be
   schema-validated, checked against the synthetic data (IDs exist, expectations
   possible), and approved by a human before joining the golden set.
@@ -36,6 +42,8 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
    (Windows) or `.venv/bin/...` (macOS/Linux).
 3. Have the `reviewer` subagent review the diff; fix every "must fix" finding.
 4. Only then commit, and only when asked. Never commit `.env` or local settings.
+   The pre-commit hook (`.githooks/pre-commit`, enabled with
+   `git config core.hooksPath .githooks`) re-runs the secret scan, ruff and pytest.
 
 ## Layout
 - `bank_agent/data.py` — synthetic data + `reset_data()`
@@ -48,3 +56,4 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - `generate_cases.py` → `review_cases.py` → `run_eval.py` → `score_runs.py` (CLIs)
 - `tests/` — offline pytest tests (`pytest`)
 - `.claude/agents/` — Claude Code subagents: `test-writer`, `reviewer`
+- `devtools/check_secrets.py` — offline secret scanner; `.githooks/pre-commit` — commit checks

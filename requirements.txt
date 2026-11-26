@@ -1,2 +1,8 @@
-openai-agents>=0.3
-python-dotenv>=1.0
+# Runtime dependencies, pinned to the versions this project is tested with.
+# Upgrade deliberately: bump a pin, run the offline tests, commit (see requirements-lock.txt).
+openai-agents==0.26.0
+python-dotenv==1.2.4
+# Imported directly by our code/tests, so declared explicitly (not just via openai-agents):
+openai==3.60.0
+httpx2==2.16.2
+pydantic==2.14.4

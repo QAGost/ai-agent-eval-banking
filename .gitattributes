@@ -1,0 +1,2 @@
+# Shell hooks must keep LF line endings on every OS: a CRLF shebang line breaks them.
+.githooks/* text eol=lf

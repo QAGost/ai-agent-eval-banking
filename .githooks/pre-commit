@@ -1,0 +1,27 @@
+#!/bin/sh
+# Pre-commit checks (enable once per clone:  git config core.hooksPath .githooks)
+# 1. secret scan of the staged content  2. ruff lint + format check  3. offline tests
+# All offline: no API key, no network. Bypassing with --no-verify is against CLAUDE.md.
+# Note: the secret scan reads the STAGED content; ruff and pytest run on the working tree,
+# so stage everything you changed (or stash the rest) before committing.
+set -e
+
+# Use the project's virtual environment (Windows or macOS/Linux layout).
+if [ -x .venv/Scripts/python.exe ] || [ -x .venv/Scripts/python ]; then
+    PY=.venv/Scripts/python
+elif [ -x .venv/bin/python ]; then
+    PY=.venv/bin/python
+else
+    echo "pre-commit: .venv not found. Create it first (see README Setup)." >&2
+    exit 1
+fi
+
+echo "pre-commit: secret scan"
+"$PY" -m devtools.check_secrets
+
+echo "pre-commit: ruff"
+"$PY" -m ruff check .
+"$PY" -m ruff format --check .
+
+echo "pre-commit: offline tests"
+"$PY" -m pytest -q
