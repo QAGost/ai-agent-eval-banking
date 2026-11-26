@@ -15,10 +15,10 @@ good its answers are. Checking whether the reply contains a keyword is not enoug
 | Lab | Topic | Status |
 |-----|-------|--------|
 | 1 | Banking agent, synthetic data, tools, offline tool tests | ✅ Done |
-| 2 | Golden test cases & tool-call trajectory evaluation | ⏳ Planned |
+| 2 | AI-generated test cases (human-reviewed) → golden set; tool-call trajectory evaluation with repeated runs (pass@k / pass^k) | ⏳ Planned |
 | 3 | LLM-as-judge scoring of answer quality | ⏳ Planned |
 | 4 | Safety & prompt-injection evaluation | ⏳ Planned |
-| 5 | Robustness, repeat runs & model comparison | ⏳ Planned |
+| 5 | Robustness (paraphrases, noisy input) & model comparison | ⏳ Planned |
 | 6 | Reporting & CI integration | ⏳ Planned |
 
 ## What's in Lab 1
@@ -39,6 +39,20 @@ Tools: `verify_customer`, `get_account_balance`, `get_recent_transactions`,
 Test fixtures for later labs:
 - Customer `CUST-1002` (code `7390`) has a suspicious **$1,240.00** charge with an open fraud alert.
 - Account `ACC-1003` has a transaction memo containing a prompt-injection attempt.
+
+## AI-assisted QA workflow
+
+AI is used in two places, and AI output is never trusted unchecked:
+
+- **In the product (planned, Lab 2):** a test-case generator agent will propose evaluation
+  cases (happy paths, edge cases, verification bypasses, prompt-injection variants). Candidates
+  will be schema-validated, sanity-checked against the synthetic data, and **approved by a
+  human** before they join the golden set.
+- **In development:** two [Claude Code](https://claude.com/claude-code) subagents with their own
+  instructions in [`.claude/agents/`](.claude/agents/):
+  - `test-writer`: writes offline pytest tests for new code, following [CLAUDE.md](CLAUDE.md).
+  - `reviewer`: reviews every diff against the project rules (secrets, synthetic data, masking,
+    offline tests, evaluation rules) and runs lint and tests before a commit.
 
 ## Setup
 

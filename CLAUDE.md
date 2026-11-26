@@ -24,6 +24,18 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - Be mindful of API cost and the OpenRouter free tier (50 requests/day):
   live runs only when explicitly asked; offline tests use recorded or
   simulated data.
+- AI-generated test cases are candidates, never trusted directly: they must be
+  schema-validated, checked against the synthetic data (IDs exist, expectations
+  possible), and approved by a human before joining the golden set.
+
+## Workflow (every change)
+1. Make the change. For new or changed behaviour, add offline tests
+   (or delegate to the `test-writer` subagent in `.claude/agents/`).
+2. Run `ruff check .`, `ruff format --check .` and `pytest`; all must pass.
+   These assume an activated venv; in a fresh shell use `.venv/Scripts/...`
+   (Windows) or `.venv/bin/...` (macOS/Linux).
+3. Have the `reviewer` subagent review the diff; fix every "must fix" finding.
+4. Only then commit, and only when asked. Never commit `.env` or local settings.
 
 ## Layout
 - `bank_agent/data.py` — synthetic data + `reset_data()`
@@ -31,3 +43,4 @@ AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6
 - `bank_agent/agent.py` — builds the agent (OpenRouter model, instructions, tools)
 - `run_agent.py` — CLI for one live run
 - `tests/` — offline pytest tests (`pytest`)
+- `.claude/agents/` — Claude Code subagents: `test-writer`, `reviewer`
