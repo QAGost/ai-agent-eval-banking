@@ -118,9 +118,11 @@ AI is used in two places, and AI output is never trusted unchecked:
   before they join the golden set. See [Lab 2](#lab-2-trajectory-evaluation).
 - **In development:** two [Claude Code](https://claude.com/claude-code) subagents with their own
   instructions in [`.claude/agents/`](.claude/agents/):
-  - `test-writer`: writes offline pytest tests for new code, following [CLAUDE.md](CLAUDE.md).
-  - `reviewer`: reviews every diff against the project rules (secrets, synthetic data, masking,
-    offline tests, evaluation rules) and runs lint and tests before a commit.
+  - `test-writer` (runs on a smaller, cheaper model): writes offline pytest tests for new code,
+    following [CLAUDE.md](CLAUDE.md).
+  - `reviewer`: reviews every code, test, CI or dependency change against the project rules
+    (secrets, synthetic data, masking, offline tests, evaluation rules) before a commit.
+    Docs-only changes get a self-check instead, to keep token cost proportional to risk.
 
 ## Setup
 

@@ -14,8 +14,10 @@ or run anything that calls an LLM or the network. The only commands you may run 
 1. See the change: `git status --porcelain -uall` (lists every untracked file, not just
    folders), `git diff` and `git diff --staged` (or the commit range you were given).
    `git diff` does not show untracked files: **read every untracked file in full.**
-   Read changed files in full where needed.
-2. Run the checks and include the results:
+   For modified files, start from the diff and read only the surrounding code you need to
+   judge it; don't read the whole repo. Stay within the scope you were given.
+2. Checks: if the caller gave fresh ruff/pytest results for this exact diff, don't re-run
+   them. Otherwise run and report:
    ```
    .venv/Scripts/ruff check .
    .venv/Scripts/ruff format --check .
@@ -40,7 +42,10 @@ or run anything that calls an LLM or the network. The only commands you may run 
   Windows PowerShell and macOS bash — watch quoting, e.g. `$` in double quotes).
 - **Readability:** small, commented where the why is not obvious, no dead code.
 
-## Output
-Findings ranked most severe first, each with `file:line`, what is wrong, and a concrete
-failure scenario. Separate **must fix** from **nice to have**. If nothing is wrong, say
-so plainly. End with the check results (ruff / pytest pass or fail).
+## Output (keep it short: about 300 words)
+- **Must fix:** most severe first; each with `file:line`, what is wrong, and a one-line
+  concrete failure scenario.
+- **Nice to have:** one line each, at most 5.
+- Do not list things that are correct, and do not restate the change. If nothing is wrong,
+  say so in one sentence.
+- Last line: check results (ruff / pytest pass or fail, or "not re-run: caller's results").
