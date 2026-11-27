@@ -73,6 +73,7 @@ def run_eval(
     model: str,
     log: Callable[[str], None] = print,
     served_log: "ServedModelLog | None" = None,
+    model_settings: dict | None = None,
 ) -> list[RunRecord]:
     """Run every case `runs` times; append each run to records_path as it finishes.
 
@@ -87,6 +88,7 @@ def run_eval(
                 case_id=case.id,
                 run=run,
                 model=model,
+                model_settings=model_settings or {},
                 started_at=datetime.now(UTC).isoformat(timespec="seconds"),
             )
             if served_log is not None:

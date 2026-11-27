@@ -20,9 +20,13 @@ class ToolCall(BaseModel):
 class RunRecord(BaseModel):
     case_id: str
     run: int  # 1-based run number within the case
-    model: str  # the configured AGENT_MODEL (may be a router such as "openrouter/free")
+    model: str  # the configured AGENT_MODEL
     started_at: str
-    # Models OpenRouter reports as having served each request in this run (in order).
+    # Model id + sampling settings used (temperature, top_p, max_tokens, seed, provider).
+    # Empty in records made before settings were recorded.
+    model_settings: dict[str, Any] = {}
+    # What OpenRouter reports as having served each request in this run (in order),
+    # as "model via provider" when the provider is reported.
     served_models: list[str] = []
     tool_calls: list[ToolCall] = []
     answer: str | None = None

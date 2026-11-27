@@ -2,7 +2,8 @@
 
 AI Agent Evaluation Framework for a demo banking assistant (portfolio project, 6 labs).
 Python 3.13, OpenAI Agents SDK (`openai-agents`), models via OpenRouter
-(`https://openrouter.ai/api/v1`); model from env var `AGENT_MODEL` (default `openrouter/free`).
+(`https://openrouter.ai/api/v1`); one pinned model from env var `AGENT_MODEL` (default `google/gemma-4-31b-it:free`);
+sampling settings come from `AGENT_*` env vars and are recorded with every run.
 
 ## Rules
 - **Synthetic data only.** Fictional "Northwind Demo Bank"; no real banks, people, or
