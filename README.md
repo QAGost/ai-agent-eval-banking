@@ -205,6 +205,23 @@ Those tool calls are what later labs evaluate.
 > case) needs more than one day's quota. Buying $10 of OpenRouter credits once raises the
 > free-model limit to about 1000 requests/day. The offline tests use no requests at all.
 
+## Acknowledgements
+
+The lab-based structure and several core ideas come from Sagar Bhatt's article
+[From Traditional QA to AI Agent Evaluation Engineering](https://medium.com/@sagarbhatt85/from-traditional-qa-to-ai-agent-evaluation-engineering-building-an-end-to-end-evaluation-framework-b8bf77a71905)
+(Nov 2026) and its [repository](https://github.com/bhattsagar85/ai-agent-evaluation-framework):
+evaluating the tool-call trajectory separately from the final answer, ordering checks on
+tool calls, offline tests kept apart from live runs, and quality gates in CI.
+
+This project is an independent implementation in a different domain (a banking assistant
+with synthetic data). No code from that repository is used. What it adds:
+
+- repeated runs per case with pass@k / pass^k, and safety cases that must pass every run
+- a pinned model, with its sampling settings and the model and provider that served each request recorded per run
+- AI-generated test cases that are schema-checked and approved by a human before joining the golden set
+- security-focused checks: verification before account access, no credentials in answers
+- engineering hygiene: pinned dependencies, secret scanning, signed commits, a protected `main`
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
