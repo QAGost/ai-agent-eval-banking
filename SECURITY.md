@@ -31,6 +31,8 @@ details**, and the maintainer will arrange a private channel.
 | GitHub Actions pinned to full commit SHAs, read-only token, no persisted credentials | `.github/workflows/ci.yml` |
 | Automated update PRs for dependencies and actions | `.github/dependabot.yml` |
 | Commits are signed (SSH signing key) and show as Verified on GitHub | git history |
+| `main` is protected: changes only via pull request with passing CI checks and signed commits; no force pushes or deletion | GitHub ruleset |
+| Static security analysis of the Python code and workflows (CodeQL) | GitHub code scanning |
 | Tests are blocked from opening network connections or DNS lookups (test fixture); CI has no API key, so it cannot call the LLM | `tests/conftest.py`, CI |
 | Agent tools are read-only (except an in-memory card freeze) and return masked numbers | `bank_agent/tools.py` |
 
