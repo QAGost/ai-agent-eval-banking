@@ -74,21 +74,35 @@ def main() -> int:
         return 1
 
     # Only needed for live runs.
-    from bank_agent.agent import DEFAULT_MODEL, ServedModelLog, build_agent
+    from bank_agent.agent import ServedModelLog, build_agent, model_config_from_env
 
     # Build first: a missing key fails here, before an empty results folder is created.
+    # One config for both the agent and the records, so what is recorded is what was used.
+    config = model_config_from_env()
+    model = config["model"]
     served_log = ServedModelLog()
-    executor = make_live_executor(build_agent(max_retries=0, served_models=served_log))
-    model = os.getenv("AGENT_MODEL", DEFAULT_MODEL)
+    agent = build_agent(max_retries=0, served_models=served_log, config=config)
+    executor = make_live_executor(agent)
     out_dir = Path(args.out) / datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     out_dir.mkdir(parents=True)
     for case in cases:  # snapshot the exact cases used, so re-scoring is reproducible
         append_case(out_dir / "cases.jsonl", case)
-    meta = {"model": model, "runs_per_case": args.runs, "case_ids": [c.id for c in cases]}
+    meta = {
+        "model": model,
+        "model_settings": config,
+        "runs_per_case": args.runs,
+        "case_ids": [c.id for c in cases],
+    }
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     records = run_eval(
-        cases, args.runs, executor, out_dir / "runs.jsonl", model, served_log=served_log
+        cases,
+        args.runs,
+        executor,
+        out_dir / "runs.jsonl",
+        model,
+        served_log=served_log,
+        model_settings=config,
     )
 
     summary = summarize(cases, records, args.runs)

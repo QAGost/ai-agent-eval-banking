@@ -162,7 +162,10 @@ Dependencies are pinned in `requirements.txt` / `requirements-dev.txt`;
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `OPENROUTER_API_KEY` | OpenRouter API key | (required for live runs) |
-| `AGENT_MODEL` | Model ID on OpenRouter | `openrouter/free` |
+| `AGENT_MODEL` | Model ID on OpenRouter (one pinned model) | `google/gemma-4-31b-it:free` |
+| `AGENT_TEMPERATURE` / `AGENT_TOP_P` / `AGENT_MAX_TOKENS` | Sampling settings | `0.3` / `1.0` / `1024` |
+| `AGENT_SEED` | Optional sampling seed | (not sent) |
+| `AGENT_PROVIDER` | Optional: pin one OpenRouter provider, no fallbacks | (OpenRouter picks) |
 | `RUNS_PER_CASE` | Runs per test case in `run_eval.py` | `5` |
 
 ## Run the offline tests
@@ -188,14 +191,19 @@ python run_agent.py 'I am customer CUST-1002, PIN 7390. Is the $1,240 charge on 
 
 The output shows the agent's final answer, followed by the list of tool calls it made (tool
 name and arguments), the run latency, the number of model requests used and which model served
-them. `openrouter/free` is a router that may pick a different free model for each request, so
-every eval run also records the served model(s) and the report shows them. Those tool calls
-are what later labs evaluate.
+them. Evals use one pinned model (not the `openrouter/free` router, which picks a different
+model per request), so runs are comparable. Every eval run records the model settings (in
+`meta.json` and each run record) and the model and provider that actually served each request;
+the report lists the served models and providers. Requests only go to providers that support
+every setting sent, so the recorded settings are the ones used. If OpenRouter answers "no
+endpoints found", unset `AGENT_SEED` / `AGENT_PROVIDER` or choose another model.
+Those tool calls are what later labs evaluate.
 
 > 💸 **API cost:** one question is not one request. Each agent turn is a separate model call,
 > so a single run typically uses 2–8 requests (capped by `max_turns=8`). The OpenRouter free
-> tier allows about 50 requests/day, so run live checks sparingly. The offline tests use no
-> requests at all.
+> tier allows about 50 requests/day, so run live checks sparingly: a full eval (5 runs per
+> case) needs more than one day's quota. Buying $10 of OpenRouter credits once raises the
+> free-model limit to about 1000 requests/day. The offline tests use no requests at all.
 
 ## License
 
