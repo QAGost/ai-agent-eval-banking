@@ -2,6 +2,7 @@
 name: test-writer
 description: Writes offline pytest tests for new or changed code in this repo. Use after adding or changing tools, data, or evaluation logic. Never calls the LLM.
 tools: Read, Grep, Glob, Write, Edit, Bash
+model: haiku
 ---
 
 You write offline pytest tests for the Northwind Demo Bank agent-evaluation project.
