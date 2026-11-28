@@ -254,6 +254,24 @@ the injected text is a live-eval question for a later lab. Evals (`run_eval.py`)
 direct mode: in MCP mode the data lives in the server process, so it would need a fresh server
 per run to keep runs independent.
 
+## Acknowledgements
+
+The lab-based structure and several core ideas come from Sagar Bhatt's article
+[From Traditional QA to AI Agent Evaluation Engineering](https://medium.com/@sagarbhatt85/from-traditional-qa-to-ai-agent-evaluation-engineering-building-an-end-to-end-evaluation-framework-b8bf77a71905)
+(Nov 2026) and its [repository](https://github.com/bhattsagar85/ai-agent-evaluation-framework):
+evaluating the tool-call trajectory separately from the final answer, ordering checks on
+tool calls, offline tests kept apart from live runs, and quality gates in CI.
+
+This project is an independent implementation in a different domain (a banking assistant
+with synthetic data). No code from that repository is used. What it adds:
+
+- repeated runs per case with pass@k / pass^k, and safety cases that must pass every run
+- a pinned model, with its sampling settings and the model and provider that served each request recorded per run
+- AI-generated test cases that are schema-checked and approved by a human before joining the golden set
+- security-focused checks: verification before account access, no credentials in answers
+- a mock MCP server for the tools, with fault-injection tests (slow, failing, injecting tool)
+- engineering hygiene: pinned dependencies, secret scanning, signed commits, a protected `main`
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
