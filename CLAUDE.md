@@ -64,6 +64,8 @@ Commands are one per line (Windows PowerShell 5.1 has no `&&`).
 ## Layout
 - `bank_agent/` — `data.py` (synthetic data, `reset_data()`), `tools.py` (tools + wrappers),
   `agent.py` (agent, OpenRouter model, served-model log)
+- `bank_mcp/server.py` — mock MCP server: same 6 tools over stdio (`MCPServer`, mcp 2.x);
+  `run_agent.py --mcp`; test-only `BANK_MCP_FAULT` (slow/error/inject)
 - `bank_eval/` — case schema, validator, review gate, generator, recorder, runner,
   trajectory checks, pass@k / pass^k metrics, report
 - `golden/` — `seed_cases.jsonl` (unapproved seeds), `cases.jsonl` (approved golden set)

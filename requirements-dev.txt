@@ -1,3 +1,5 @@
 -r requirements.txt
 pytest==9.2.0
 ruff==0.17.6
+# `mcp dev` (MCP Inspector) needs the cli extra; also needs Node.js (npx).
+mcp[cli]==2.3.0

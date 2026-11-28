@@ -28,6 +28,8 @@ bank_agent/
   data.py       synthetic customers, accounts, transactions, fraud alerts, cards
   tools.py      6 tools (plain functions + @function_tool wrappers), JSON output, masked numbers
   agent.py      builds the agent (OpenAI Agents SDK + OpenRouter) with its safety instructions
+bank_mcp/
+  server.py     mock MCP server: the same 6 tools over stdio (see "Mock MCP server" below)
 run_agent.py    CLI: runs one question, prints the answer and the tool calls made
 tests/          offline pytest tests for every tool (no LLM, no API key)
 ```
@@ -204,6 +206,53 @@ Those tool calls are what later labs evaluate.
 > tier allows about 50 requests/day, so run live checks sparingly: a full eval (5 runs per
 > case) needs more than one day's quota. Buying $10 of OpenRouter credits once raises the
 > free-model limit to about 1000 requests/day. The offline tests use no requests at all.
+
+## Mock MCP server
+
+[bank_mcp/server.py](bank_mcp/server.py) exposes the same six tools over the
+[Model Context Protocol](https://modelcontextprotocol.io) (MCP), the way a real bank might offer
+its systems to an agent as a separate tool service. It wraps the same plain functions as the
+direct-mode agent, backed by the same synthetic data (reset at every start), so both modes
+behave identically. It uses the official `mcp` Python SDK 2.x, where `FastMCP` is now
+`MCPServer`.
+
+```bash
+# Ask the agent a question, with its tools served by the MCP server (a subprocess).
+python run_agent.py --mcp 'I am customer CUST-1002, PIN 7390. What is my balance?'
+
+# Run the server by hand (it waits for an MCP client on stdin/stdout).
+python -m bank_mcp.server
+
+# Explore and call the tools in the MCP Inspector (browser UI; needs Node.js / npx).
+mcp dev bank_mcp/server.py
+```
+
+In the Inspector, click **Connect**, then **Tools > List Tools**. Try `get_account_balance`
+with `ACC-1002`, or `freeze_card` followed by `get_card_status` on the same card.
+
+**Test-only fault mode** ([bank_mcp/faults.py](bank_mcp/faults.py)). `BANK_MCP_FAULT=<mode>:<tool>` makes one tool misbehave: `slow`
+(waits `BANK_MCP_SLOW_SECONDS`, default 10), `error` (fails), or `inject` (adds
+prompt-injection text to the real result). The server prints a warning to stderr when it is on.
+Never set it outside tests.
+
+**Tests** ([tests/test_mcp_server.py](tests/test_mcp_server.py), offline, about 40 s
+locally, because each test starts a server process) use the official MCP client to check:
+- all six tools are listed, with the same parameters and types as the direct-mode tools;
+- results match the fake data, `freeze_card` changes the server's state, and each start is fresh;
+- each fault fails cleanly (a slow tool hits the timeout, and a crash does not leak its internal
+  message to the client);
+- with the real agent connected to a faulty server (and a scripted fake model instead of an
+  LLM), the run finishes rather than crashing or hanging, the problem reaches the model only as
+  a tool result, and no card gets frozen.
+
+```bash
+pytest tests/test_mcp_server.py -v
+```
+
+These tests prove the pipeline handles a bad tool service safely. Whether a real model resists
+the injected text is a live-eval question for a later lab. Evals (`run_eval.py`) still use
+direct mode: in MCP mode the data lives in the server process, so it would need a fresh server
+per run to keep runs independent.
 
 ## License
 

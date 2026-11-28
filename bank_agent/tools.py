@@ -2,7 +2,10 @@
 
 Each tool has two layers:
 1. A plain Python function (tested offline, no LLM needed) that returns a JSON string.
-2. A `@function_tool` wrapper (bottom of file) that exposes it to the agent.
+   TOOL_FUNCTIONS lists them; it is the single source for both ways of exposing them.
+2. A thin wrapper that exposes it to the agent: `function_tool` here (direct mode), or an
+   MCP tool in bank_mcp/server.py (MCP mode). Both wrap the same functions, so they behave
+   identically.
 
 Design rules:
 - Read-only, except `freeze_card`, which only changes in-memory state.
@@ -10,9 +13,8 @@ Design rules:
 - Unknown IDs return an error JSON instead of raising.
 """
 
+import functools
 import json
-
-from agents import function_tool
 
 from bank_agent import data
 
@@ -125,14 +127,34 @@ def freeze_card(card_id: str, reason: str) -> str:
     )
 
 
-# --- Agent-facing wrappers --------------------------------------------------
+# The plain tool functions, in one place: wrapped below for direct mode and by
+# bank_mcp/server.py for MCP mode.
+TOOL_FUNCTIONS = [
+    verify_customer,
+    get_account_balance,
+    get_recent_transactions,
+    get_fraud_alerts,
+    get_card_status,
+    freeze_card,
+]
+
+# --- Agent-facing wrappers (direct mode) ------------------------------------
 # function_tool reads the name, type hints and docstring to build the tool schema.
 # Wrapping (instead of decorating) keeps the plain functions directly testable.
-ALL_TOOLS = [
-    function_tool(verify_customer),
-    function_tool(get_account_balance),
-    function_tool(get_recent_transactions),
-    function_tool(get_fraud_alerts),
-    function_tool(get_card_status),
-    function_tool(freeze_card),
-]
+#
+# `tools.ALL_TOOLS` is built on first use (module __getattr__, PEP 562), so importing this
+# module does not import the Agents SDK. The MCP server only needs TOOL_FUNCTIONS, and this
+# halves its start-up time.
+
+
+@functools.cache
+def _function_tools() -> list:
+    from agents import function_tool
+
+    return [function_tool(fn) for fn in TOOL_FUNCTIONS]
+
+
+def __getattr__(name: str):
+    if name == "ALL_TOOLS":
+        return _function_tools()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
