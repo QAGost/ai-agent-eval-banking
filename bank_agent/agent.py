@@ -2,9 +2,12 @@
 
 import json
 import os
+import sys
+from pathlib import Path
 
 import httpx2
 from agents import Agent, ModelSettings, OpenAIChatCompletionsModel, set_tracing_disabled
+from agents.mcp import MCPServer, MCPServerStdio
 from dotenv import load_dotenv
 from openai import AsyncOpenAI, DefaultAsyncHttpxClient
 
@@ -168,11 +171,14 @@ def build_agent(
     served_models: ServedModelLog | None = None,
     transport: httpx2.AsyncBaseTransport | None = None,
     config: dict | None = None,
+    mcp_servers: list[MCPServer] | None = None,
 ) -> Agent:
     """Create the banking support agent.
 
     config: model id + sampling settings (see model_config_from_env, the default). Evals pass
     the same dict they record, so the recorded settings are exactly the ones used.
+    mcp_servers: MCP mode. If given, the agent gets its tools from these (already connected)
+    servers instead of the in-process function tools; see bank_mcp_server().
     """
     config = config or model_config_from_env()
     return Agent(
@@ -180,5 +186,32 @@ def build_agent(
         instructions=INSTRUCTIONS,
         model=make_model(max_retries, served_models, transport, model=config["model"]),
         model_settings=model_settings(config),
-        tools=ALL_TOOLS,
+        tools=[] if mcp_servers else ALL_TOOLS,
+        mcp_servers=mcp_servers or [],
+    )
+
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def bank_mcp_server(env: dict[str, str] | None = None, timeout_s: float = 10) -> MCPServerStdio:
+    """The mock bank MCP server (bank_mcp/server.py), started as a subprocess over stdio.
+
+    Use as `async with bank_mcp_server() as server:`, then build_agent(mcp_servers=[server]).
+    env: extra variables for the server process (tests use it for BANK_MCP_FAULT).
+    timeout_s: the MCP read timeout for EVERY request to the server, including the start-up
+    handshake and the tool list, not only tool calls. Keep it well above server start-up time
+    (a few seconds). A tool call slower than this becomes a tool error the model sees, instead
+    of the run hanging.
+    """
+    return MCPServerStdio(
+        params={
+            "command": sys.executable,  # the same Python (and venv) as this process
+            "args": ["-m", "bank_mcp.server"],
+            "cwd": str(REPO_ROOT),
+            "env": env or {},
+        },
+        name="northwind-demo-bank",
+        cache_tools_list=True,  # the tool list never changes while the server runs
+        client_session_timeout_seconds=timeout_s,
     )

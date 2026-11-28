@@ -6,3 +6,5 @@ python-dotenv==1.2.4
 openai==3.60.0
 httpx2==2.16.2
 pydantic==2.14.4
+mcp==2.3.0  # mock bank MCP server + client (bank_mcp/)
+anyio==4.16.0
